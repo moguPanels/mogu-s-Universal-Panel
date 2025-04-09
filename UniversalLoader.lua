@@ -1,85 +1,92 @@
+-- Load Rayfield UI Library
+local Rayfield = loadstring(game:HttpGet("https://raw.githubusercontent.com/moguPanels/mogu-s-Universal-Panel/main/Rayfield.lua"))()
 
-local games = {
-    ["Jailbreak"] = "https://raw.githubusercontent.com/moguPanels/mogu-s-Universal-Panel/main/Jailbreak.lua",
-    -- Add more games here
-}
-
--- Load Rayfield UI
-local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
-
--- Create Chrome-style window
-local Window = Rayfield:CreateWindow({
+-- Create the main UI window
+local MainUI = Rayfield:CreateWindow({
     Name = "Mogu's Universal Panel",
-    LoadingTitle = "Loading Mogu's Panel...",
+    LoadingTitle = "Mogu Hub",
+    LoadingSubtitle = "Universal Loader",
     ConfigurationSaving = {
-        Enabled = false
-    }
+        Enabled = true,
+        FolderName = "MoguHub",
+        FileName = "UniversalConfig"
+    },
+    Discord = {
+        Enabled = true,
+        Invite = "Hn7tvHzb44", -- Your Discord invite code
+        RememberJoins = true
+    },
+    KeySystem = false
 })
 
--- Create Game Selection Tab
-local GameTab = Window:CreateTab("Select Game", 4483362458)
+-- AUTHENTICATION TAB
+local authenticated = false
+local KeyTab = MainUI:CreateTab("Authentication", 4483362458)
 
-for gameName, scriptURL in pairs(games) do
-    GameTab:CreateButton({
-        Name = gameName,
-        Callback = function()
-            loadstring(game:HttpGet(scriptURL))()
-        end,
-    })
-end
+KeyTab:CreateParagraph({
+    Title = "Login Required",
+    Content = "Join the Discord server to get the password (key).\nEnter any username."
+})
 
--- Create Database-style Key System
-local KeyInput = ""
-local PasswordInput = ""
+local username = ""
+local password = ""
 
-Rayfield:Notify({
-    Title = "Authentication",
-    Content = "Please enter username and password to continue.",
-    Duration = 6.5,
-    Image = 4483362458,
-    Actions = {
-        Ignore = {
-            Name = "Enter",
-            Callback = function()
-                local InputWindow = Rayfield:CreateWindow({
-                    Name = "Database Login",
-                    ConfigurationSaving = {
-                        Enabled = false
-                    }
-                })
+KeyTab:CreateInput({
+    Name = "Username",
+    PlaceholderText = "Enter any username",
+    RemoveTextAfterFocusLost = false,
+    Callback = function(text)
+        username = text
+    end,
+})
 
-                local KeyTab = InputWindow:CreateTab("Login", 4483362458)
-                KeyTab:CreateInput({
-                    Name = "Username",
-                    PlaceholderText = "Enter any name",
-                    RemoveTextAfterFocusLost = false,
-                    Callback = function(text)
-                        KeyInput = text
-                    end,
-                })
+KeyTab:CreateInput({
+    Name = "Password (Key)",
+    PlaceholderText = "Found in Discord server",
+    RemoveTextAfterFocusLost = false,
+    Callback = function(text)
+        password = text
+    end,
+})
 
-                KeyTab:CreateInput({
-                    Name = "Password",
-                    PlaceholderText = "Enter password",
-                    RemoveTextAfterFocusLost = false,
-                    Callback = function(text)
-                        PasswordInput = text
-                    end,
-                })
+KeyTab:CreateButton({
+    Name = "Login",
+    Callback = function()
+        if password == "MCPMPU" then
+            Rayfield:Notify({
+                Title = "Success",
+                Content = "Welcome, " .. (username ~= "" and username or "Guest") .. "!",
+                Duration = 4
+            })
+            authenticated = true
+            GameTab:Show()
+        else
+            Rayfield:Notify({
+                Title = "Invalid Key",
+                Content = "Get the correct key from the Discord server.",
+                Duration = 5
+            })
+        end
+    end,
+})
 
-                KeyTab:CreateButton({
-                    Name = "Login",
-                    Callback = function()
-                        -- Accept any input
-                        Rayfield:Notify({
-                            Title = "Login Successful",
-                            Content = "Welcome, " .. KeyInput,
-                            Duration = 4,
-                            Image = 4483362458
-                        })
-                    end
-                })
-            end
-        }
-    }
+-- GAME SELECTOR TAB (locked until login)
+local GameTab = MainUI:CreateTab("Select Game", 4483362458)
+GameTab:Hide()
+
+GameTab:CreateParagraph({
+    Title = "Game Selector",
+    Content = "Pick a game to load its control panel."
+})
+
+GameTab:CreateButton({
+    Name = "Jailbreak",
+    Callback = function()
+        Rayfield:Notify({
+            Title = "Loading",
+            Content = "Launching Jailbreak panel...",
+            Duration = 3
+        })
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/moguPanels/mogu-s-Universal-Panel/main/Jailbreak.lua"))()
+    end,
 })
