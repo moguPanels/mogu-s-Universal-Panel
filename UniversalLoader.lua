@@ -1,89 +1,107 @@
-loadstring(game:HttpGet("https://raw.githubusercontent.com/moguPanels/mogu-s-Universal-Panel/main/UniversalLoader.lua"))()
 
--- UI Libraries
-local Rayfield = loadstring(game:HttpGet("https://raw.githubusercontent.com/shlexware/Rayfield/main/source.lua"))()
+-- Mogu's Universal Panel: Chrome-Styled UI Loader with Animation, Glow, and Database Key UI
 
--- Animate Logo
-local function AnimateLogo()
-    local logo = Instance.new("ImageLabel")
-    logo.Image = "rbxassetid://YOUR_LOGO_IMAGE_ID" -- Replace with uploaded train panel logo asset
-    logo.Size = UDim2.new(0, 120, 0, 120)
-    logo.Position = UDim2.new(0.5, -60, 0.1, -60)
-    logo.AnchorPoint = Vector2.new(0.5, 0.5)
-    logo.BackgroundTransparency = 1
-    logo.Parent = Rayfield.Main
-    logo.Rotation = 0
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
 
-    task.spawn(function()
-        while wait() do
-            logo.Rotation += 1
-            logo.ImageColor3 = Color3.fromHSV(tick() % 5 / 5, 1, 1)
-        end
-    end)
-end
-
--- Jumbled Text Animation
-local function AnimateTitle()
-    local title = Rayfield.Title
-    local realText = "mogu's Panel"
-    local chars = {"@", "#", "$", "%", "&", "*", "!", "?", "Z", "K", "9"}
-
-    task.spawn(function()
-        for i = 1, #realText do
-            for _ = 1, 5 do
-                title.Text = realText:sub(1, i - 1) .. chars[math.random(1, #chars)] .. realText:sub(i + 1)
-                wait(0.05)
-            end
-            title.Text = realText:sub(1, i)
-        end
-    end)
-end
-
--- Stylized Key UI
-Rayfield:CreateKeySystem({
-    Title = "Access Database",
-    Subtitle = "Secure Chrome Panel Login",
-    Note = "Enter username and password to proceed.",
-    SaveKey = true,
-    GrabKeyFromSite = false,
-    KeyInput = true,
-    Key = "mogupanel", -- can be anything; not validated
-    KeyUI = {
-        PlaceholderText = "Username",
-        PasswordPlaceholder = "Password",
-        AcceptsRandomUsername = true
-    },
-    OnSuccess = function()
-        -- Load Universal Panel
-    end
-})
-
--- Main Panel w/ URL bar
+-- Browser-like Window with Tabs and URL
+local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 local Window = Rayfield:CreateWindow({
-    Name = "https://mogu.universal/panel",
-    LoadingTitle = "mogu's Panel",
-    LoadingSubtitle = "Initializing Chrome-style UI...",
+    Name = "https://mogu.panel/loader",
+    LoadingTitle = "Loading mogu's Panel...",
+    LoadingSubtitle = "Initializing Chrome Interface",
     ConfigurationSaving = {
         Enabled = true,
-        FolderName = "MoguUniversalPanel",
-        FileName = "ControlPanelConfig"
+        FolderName = "MoguPanel",
+        FileName = "LoaderSettings"
     },
     Discord = {
-        Enabled = false,
-        Invite = "",
-        RememberJoins = false
+        Enabled = false
     },
-    KeySystem = false
+    KeySystem = true,
+    KeySettings = {
+        Title = "Secure Access Panel",
+        Subtitle = "Database Authentication Required",
+        Note = "Enter any username and a password.",
+        FileName = "MoguKeySystem",
+        SaveKey = false,
+        GrabKeyFromSite = false,
+        Key = "password" -- Accepts any user, but key must be 'password'
+    }
 })
 
--- Undo/Redo Tab Logic (pseudo, to be implemented in next update)
--- Store opened/closed tabs in stack tables, simulate browser-like navigation
+-- Animate the Control Panel Logo and Title
+do
+    local function jumbledText(target, label)
+        local charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!@#$%^&*"
+        local iterations = 15
+        local delay = 0.05
 
--- Example Jailbreak Button
-local GamesTab = Window:CreateTab("Universal", 4483362458)
-GamesTab:CreateButton({
-    Name = "Jailbreak",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/moguPanels/mogu-s-Universal-Panel/Jailbreak.lua"))()
+        for i = 1, iterations do
+            local text = ""
+            for j = 1, #target do
+                if j <= i then
+                    text = text .. target:sub(j, j)
+                else
+                    text = text .. charset:sub(math.random(1, #charset), math.random(1, #charset))
+                end
+            end
+            label:Set(text)
+            wait(delay)
+        end
+        label:Set(target)
     end
+
+    local TitleTab = Window:CreateTab("mogu's Panel", nil)
+    jumbledText("mogu's Panel", TitleTab)
+end
+
+-- Dynamic Tab URL System
+local function updateURL(gameName)
+    Window:SetName("https://" .. gameName .. "/moguu_ControlPanel")
+end
+
+-- Undo/Redo Mechanism (basic)
+local undoStack, redoStack = {}, {}
+local function addTab(tab)
+    table.insert(undoStack, tab)
+    redoStack = {}
+end
+
+local function undoTab()
+    if #undoStack > 0 then
+        local last = table.remove(undoStack)
+        table.insert(redoStack, last)
+        last:Destroy()
+    end
+end
+
+local function redoTab()
+    if #redoStack > 0 then
+        local restore = table.remove(redoStack)
+        table.insert(undoStack, restore)
+    end
+end
+
+-- Tab Controls UI
+local ControlTab = Window:CreateTab("Tab Manager", nil)
+ControlTab:CreateButton({
+    Name = "Undo Last Tab",
+    Callback = undoTab
 })
+ControlTab:CreateButton({
+    Name = "Redo Last Tab",
+    Callback = redoTab
+})
+
+-- Load Jailbreak Panel
+if game.PlaceId == 606849621 then
+    updateURL("jailbreak")
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/moguPanels/mogu-s-Universal-Panel/refs/heads/main/Jailbreak.lua"))()
+else
+    local tab = Window:CreateTab("Game Not Supported", nil)
+    tab:CreateParagraph({Title = "Oops!", Content = "This game is not yet supported."})
+end
+
