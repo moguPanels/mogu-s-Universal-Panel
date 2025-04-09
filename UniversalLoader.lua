@@ -1,7 +1,6 @@
--- Load Rayfield UI Library
+
 local Rayfield = loadstring(game:HttpGet("https://raw.githubusercontent.com/moguPanels/mogu-s-Universal-Panel/main/Rayfield.lua"))()
 
--- Create the main UI window
 local MainUI = Rayfield:CreateWindow({
     Name = "Mogu's Universal Panel",
     LoadingTitle = "Mogu Hub",
@@ -13,14 +12,16 @@ local MainUI = Rayfield:CreateWindow({
     },
     Discord = {
         Enabled = true,
-        Invite = "Hn7tvHzb44", -- Your Discord invite code
+        Invite = "Hn7tvHzb44",
         RememberJoins = true
     },
     KeySystem = false
 })
 
--- AUTHENTICATION TAB
 local authenticated = false
+local username = "Guest Account"
+local password = "MCPMPU"
+
 local KeyTab = MainUI:CreateTab("Authentication", 4483362458)
 
 KeyTab:CreateParagraph({
@@ -28,15 +29,12 @@ KeyTab:CreateParagraph({
     Content = "Join the Discord server to get the password (key).\nEnter any username."
 })
 
-local username = "Guest Account"
-local password = "MCPMPU"
-
 KeyTab:CreateInput({
     Name = "Username",
     PlaceholderText = "Enter any username",
     RemoveTextAfterFocusLost = false,
     Callback = function(text)
-        username = text
+        username = (text ~= "" and text) or "Guest Account"
     end,
 })
 
@@ -45,7 +43,7 @@ KeyTab:CreateInput({
     PlaceholderText = "Found in Discord server",
     RemoveTextAfterFocusLost = false,
     Callback = function(text)
-        password = text
+        password = (text ~= "" and text) or "MCPMPU"
     end,
 })
 
@@ -55,7 +53,7 @@ KeyTab:CreateButton({
         if password == "MCPMPU" then
             Rayfield:Notify({
                 Title = "Success",
-                Content = "Welcome, " .. (username ~= "" and username or "Guest") .. "!",
+                Content = "Welcome, " .. (username or "Guest Account") .. "!",
                 Duration = 4
             })
             authenticated = true
@@ -70,7 +68,6 @@ KeyTab:CreateButton({
     end,
 })
 
--- GAME SELECTOR TAB (locked until login)
 local GameTab = MainUI:CreateTab("Select Game", 4483362458)
 GameTab:Hide()
 
