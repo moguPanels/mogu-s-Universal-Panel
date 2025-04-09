@@ -31,7 +31,7 @@ local Window = Rayfield:CreateWindow({
 local UniversalTab = Window:CreateTab("Mogu's Universal Panel", nil)
 
 local Games = {
-   ["J - Jailbreak"] = "https://pastebin.com/raw/RpMyNU3z" -- Replace this with actual Pastebin link later
+   ["J - Jailbreak"] = "https://raw.githubusercontent.com/moguPanels/mogu-s-Universal-Panel/main/Jailbreak.lua" -- Replace this with actual Pastebin link later
 }
 
 for gameName, scriptURL in pairs(Games) do
