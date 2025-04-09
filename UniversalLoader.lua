@@ -28,8 +28,8 @@ KeyTab:CreateParagraph({
     Content = "Join the Discord server to get the password (key).\nEnter any username."
 })
 
-local username = ""
-local password = ""
+local username = "Guest Account"
+local password = "MCPMPU"
 
 KeyTab:CreateInput({
     Name = "Username",
