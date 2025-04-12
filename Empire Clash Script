@@ -1,0 +1,114 @@
+-- Load Rayfield library
+local Rayfield = loadstring(game:HttpGet("https://raw.githubusercontent.com/shlexware/Rayfield/main/source"))()
+
+-- Create Rayfield Window
+local Player = game.Players.LocalPlayer
+local Menu = Rayfield:CreateWindow({
+    Name = "Auto Mine & Feed Menu",
+    LoadingTitle = "Loading...",
+    LoadingSubtitle = "Please wait...",
+    ConfigurationSaving = {
+        Enabled = true,
+        FolderName = "RayfieldConfigs",
+        FileName = Player.Name,
+    },
+})
+
+local AutoFarmTab = Menu:CreateTab("Auto Mining")
+
+-- Variables to control the loop
+local isMining = false
+
+-- Function to teleport to a position
+local function teleportTo(position)
+    if Player.Character and Player.Character:FindFirstChild("HumanoidRootPart") then
+        Player.Character.HumanoidRootPart.CFrame = CFrame.new(position + Vector3.new(0, 5, 0)) -- Adjust height
+    end
+end
+
+-- Function to equip the best pickaxe
+local function equipBestPickaxe()
+    local backpack = Player:FindFirstChild("Backpack")
+    local bestPickaxe = nil
+
+    -- Iterate through the Backpack to find all pickaxes
+    for _, tool in ipairs(backpack:GetChildren()) do
+        if tool:IsA("Tool") and (tool.Name == "Rusty Pickaxe" or tool.Name == "Iron Pickaxe" or tool.Name == "Gold Pickaxe") then
+            if not bestPickaxe then
+                bestPickaxe = tool -- First pickaxe found
+            elseif tool.Name == "Gold Pickaxe" then
+                bestPickaxe = tool -- Gold is the best
+            elseif tool.Name == "Iron Pickaxe" and bestPickaxe.Name ~= "Gold Pickaxe" then
+                bestPickaxe = tool -- Iron is better than Rusty
+            end
+        end
+    end
+
+    -- Equip the best pickaxe if found
+    if bestPickaxe then
+        bestPickaxe.Parent = Player.Character -- Move the pickaxe from the backpack to the character
+    end
+end
+
+-- Function to auto mine ores
+local function autoMineOres()
+    while isMining do
+        wait(1) -- Add delay for smoother operation
+        equipBestPickaxe() -- Equip the best pickaxe before mining
+
+        for _, ore in pairs(workspace:GetChildren()) do
+            if ore:IsA("Part") and (ore.Name == "Coal Node" or ore.Name == "Iron Node" or ore.Name == "Gold Node") then
+                teleportTo(ore.Position)
+                wait(0.1) -- Wait to ensure the teleportation is executed
+                -- Trigger mining action here (depends on how the game handles mining)
+                -- Example: 
+                -- if Player.Character:FindFirstChild("Pickaxe") then
+                --    Player.Character.Pickaxe:Activate() -- Activate the pickaxe or mining tool
+                -- end
+                break -- Stop after mining one ore before continuing
+            end
+        end
+        -- Check hunger after each cycle
+        checkHunger()
+    end
+end
+
+-- Function to check hunger and feed the player
+local function checkHunger()
+    local hunger = Player:FindFirstChild("Hunger") -- Adjust this to reflect how hunger is represented in the game
+    if hunger and hunger.Value < 40 then
+        buyAndEatFood()
+    end
+end
+
+-- Function to buy food and eat until hunger is full
+local function buyAndEatFood()
+    while isMining do
+        wait(1) -- Delay between feeding actions
+        local food = game.Workspace.Tavern.Food -- Adjust to the correct path where food can be bought
+        if food then
+            -- Assuming there is a method to buy food based on hunger
+            -- Example:
+            -- game:GetService("ReplicatedStorage").BuyFood:FireServer(food.Name) -- Example of how to buy food
+            Player.Hunger.Value = 100 -- Simulating feeding the player; adjust as necessary
+
+            print("Eating food. Hunger restored to 100%.")
+            wait(3) -- Wait time to simulate eating duration
+        end
+    end
+end
+
+-- Create buttons in the Rayfield Menu for Mobile
+AutoFarmTab:CreateToggle({
+    Name = "Start Auto Mine & Feed",
+    Callback = function(state)
+        isMining = state
+        if isMining then
+            print("Auto Mine & Feed Activated!")
+            autoMineOres()
+        else
+            print("Auto Mine & Feed Deactivated!")
+        end
+    end,
+})
+
